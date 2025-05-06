@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>{{ title }}</h1>
+
+        {% if service.image %}
+            <p><img src="{{ service.image.url }}" alt="{{ service.name }}" style="max-width: 400px;"></p>
+        {% endif %}
+
+        <p>{{description }}</p>
+
+        <p><strong>Цена:</strong> {{ price }} ₽</p>
+{% endblock %}

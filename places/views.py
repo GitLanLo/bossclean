@@ -1,8 +1,9 @@
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.template.loader import render_to_string
 
+from places.models import Service
 
 '''
 menu = ["О компании", "Услуги", "Контакты", "Вход"]
@@ -28,10 +29,10 @@ services = [
 ]
 
 services_db = [
-    {'id': 1, 'name': 'Уборка однокомнатной квартиры'},
-    {'id': 2, 'name': 'Уборка двухкомнатной квартиры'},
-    {'id': 3, 'name': 'Уборка трехкомнатной квартиры'},
-    {'id': 4, 'name': 'Уборка квартиры с более чем 3 комнатами'}
+    {'id': 'slug-1', 'name': 'Уборка однокомнатной квартиры'},
+    {'id': 'slug-2', 'name': 'Уборка двухкомнатной квартиры'},
+    {'id': 'slug-3', 'name': 'Уборка трехкомнатной квартиры'},
+    {'id': 'slug-4', 'name': 'Уборка квартиры с более чем 3 комнатами'}
 ]
 
 # Create your views here.
@@ -79,8 +80,18 @@ def index(request):
 def about(request):
     return render(request, 'places/about.html', {'title': 'О компании', 'menu': menu, 'active_page': 'about'})
 
-def show_service(request, service_id):
-    return HttpResponse(f"Детали услуги с ID = {service_id}")
+def show_service(request, service_slug):
+    service = get_object_or_404(Service, slug=service_slug)
+
+    data = {
+        'title': service.name,
+        'description': service.description,
+        'price': service.price,
+        'services': services,
+        'menu': menu,
+        'active_page': 'home'
+    }
+    return render(request, 'places/service.html', data)
 
 def addpage(request):
     return render(request, 'places/addpage.html', context = {'menu': menu, 'active_page': 'add_page'})
@@ -88,6 +99,7 @@ def contact(request):
     return render(request, 'places/contact.html', context = {'menu': menu, 'active_page': 'contact'})
 def login(request):
     return render(request, 'places/login.html', context = {'menu': menu, 'active_page': 'login'})
+
 
 
 
