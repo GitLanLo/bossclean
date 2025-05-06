@@ -1,0 +1,27 @@
+
+    {% extends 'base.html' %}
+
+    {% block content %}
+        {% include 'places/includes/nav.html' %}
+        <h1>{{ title }}</h1>
+        <ul>
+            {% for s in services %}
+                {% if s.is_available %}
+                <li>
+                    <h2>{{ s.title }}</h2>
+                    <p>{{ s.description }}</p>
+                    <p ><a href="{% url 'service_detail' s.id %}">Читать пост</a></p>
+                    {% if not forloop.last %}
+                    <hr>
+                    {% endif %}
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+        <p>Услуги по уборке часных квартир</p>
+        {% load cleaning_tags %}
+        {% show_services crv_selected%}
+
+        {% include 'places/includes/nav.html' %}
+    {% endblock %}

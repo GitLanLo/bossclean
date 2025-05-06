@@ -1,0 +1,7 @@
+{% for s in services %}
+    {% if s.id == srv_selected %}
+        <li class="selected">{{s.name}}</li>
+    {% else %}
+        <li><a href="{% url 'service_detail' s.id %}">{{s.name}}</a></li>
+    {% endif %}
+{% endfor %}

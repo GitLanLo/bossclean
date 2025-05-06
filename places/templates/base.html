@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'places/images/icon.webp' %}">
+    <link rel="stylesheet" href="{% static 'places/css/styles.css' %}">
+</head>
+<body>
+    <ul>
+        {% for m in menu %}
+            {% if m.url_name == active_page %}
+                <li class="selected">{{ m.title }}</li>
+            {% else %}
+                <li><a href="{% url m.url_name %}">{{ m.title }}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    {% block content %}{% endblock %}
+</body>
+</html>
