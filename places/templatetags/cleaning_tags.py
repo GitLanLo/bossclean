@@ -20,3 +20,5 @@ def show_categories(cat_selected=0):
 @register.inclusion_tag('places/includes/tag_block.html')
 def show_all_tags():
     return {"tags": TagService.objects.all()}
+
+

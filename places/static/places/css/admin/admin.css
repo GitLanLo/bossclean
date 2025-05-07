@@ -1,0 +1,35 @@
+/* Шапка админки */
+#header {
+  background: #009688; /* морская волна */
+  color: white;
+}
+
+#header a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.module h2, .module caption,
+.inline-group h2,
+div.breadcrumbs {
+  background: #B2DFDB; /* светлый тон */
+}
+
+/* Заголовки, кнопки и поля */
+button, input[type=submit] {
+  background-color: #00796B;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+button:hover, input[type=submit]:hover {
+  background-color: #004D40;
+}
+
+/* Общие правки */
+body {
+  font-family: "Segoe UI", sans-serif;
+}

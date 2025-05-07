@@ -2,7 +2,17 @@ from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
 
-
+def translit_to_eng(s: str) -> str:
+    d = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
+        'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
+        'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
+        'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+        'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch',
+        'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '',
+        'э': 'e', 'ю': 'yu', 'я': 'ya'
+    }
+    return "".join(d.get(c, c) for c in s.lower())
 class PublishedManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_published=Service.Status.PUBLISHED)
@@ -16,6 +26,10 @@ class ServiceCategory(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
 class TagService(models.Model):
     tag = models.CharField(max_length=100, db_index=True, verbose_name="Название тега")
@@ -57,10 +71,13 @@ class Service(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            translit_name = translit_to_eng(self.name)
+            self.slug = slugify(translit_name)
         super().save(*args, **kwargs)
 
     class Meta:
+        verbose_name = 'Услуга'
+        verbose_name_plural = 'Услуги'
         ordering = ['-price']
         indexes = [
             models.Index(fields=['-price']),
