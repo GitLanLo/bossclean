@@ -1,27 +1,20 @@
+{% extends 'base.html' %}
 
-    {% extends 'base.html' %}
-
-    {% block content %}
-        {% include 'places/includes/nav.html' %}
-        <h1>{{ title }}</h1>
-        <ul>
-            {% for s in services %}
-                {% if s.is_available %}
-                <li>
-                    <h2>{{ s.title }}</h2>
-                    <p>{{ s.description }}</p>
-                    <p ><a href="{% url 'service_detail' s.id %}">Читать пост</a></p>
-                    {% if not forloop.last %}
-                    <hr>
+{% block content %}
+    <div class="posts-list">
+        {% for p in posts %}
+            <div class="post-item">
+                <div class="article-panel">
+                    {% if not cat_selected %}
+                        <p class="first">Категория: {{ p.category.name }}</p>
                     {% endif %}
-                </li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-
-        <p>Услуги по уборке часных квартир</p>
-        {% load cleaning_tags %}
-        {% show_services crv_selected%}
-
-        {% include 'places/includes/nav.html' %}
-    {% endblock %}
+                </div>
+                <div class="post-content">
+                    <h3><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></h3>
+                    <p class="description">{{ p.description }}</p>
+                    <a class="read-more" href="{{ p.get_absolute_url }}">Читать дальше</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

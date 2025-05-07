@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.template.loader import render_to_string
 
-from places.models import Service
+from places.models import Service, ServiceCategory, TagService
 
 '''
 menu = ["О компании", "Услуги", "Контакты", "Вход"]
@@ -23,9 +23,9 @@ menu = [{'title': "Главная", 'url_name': 'home'},
 
 
 services = [
-    {'id': 1, 'title': 'Генеральная уборка', 'description': 'Полная уборка квартиры', 'is_available': True},
-    {'id': 2, 'title': 'Мойка окон', 'description': 'Чистим окна без разводов', 'is_available': False},
-    {'id': 3, 'title': 'Уборка после ремонта', 'description': 'Удалим строительную пыль', 'is_available': True},
+    {'id': 1, 'title': 'Общие услуги', 'description': 'Общие услуги', 'is_available': True},
+    {'id': 2, 'title': 'Домашняя уборка', 'description': 'Домашняя уборка', 'is_available': True},
+    {'id': 3, 'title': 'Уборка офисных помещений', 'description': 'Уборка офисных помещений', 'is_available': True},
 ]
 
 services_db = [
@@ -67,11 +67,13 @@ def page_not_found(request, exception):
     return HttpResponseNotFound("<h1>Страница не найдена</h1>")
 
 def index(request):
+    services = Service.objects.filter(is_published=True)
 
     context = {
         'title': 'Главная',
-        'services': services,
+        'posts': services,
         'menu': menu,
+        'cat_selected': 0,
         'active_page': 'home'
     }
     return render(request, 'places/index.html', context)
@@ -85,9 +87,7 @@ def show_service(request, service_slug):
 
     data = {
         'title': service.name,
-        'description': service.description,
-        'price': service.price,
-        'services': services,
+        'service': service,
         'menu': menu,
         'active_page': 'home'
     }
@@ -100,6 +100,29 @@ def contact(request):
 def login(request):
     return render(request, 'places/login.html', context = {'menu': menu, 'active_page': 'login'})
 
+def show_category(request, cat_slug):
+    category = get_object_or_404(ServiceCategory, slug=cat_slug)
+    posts = Service.published.filter(category=category)
+    context = {
+        'title': f'Рубрика: {category.name}',
+        'menu': menu,
+        'posts': posts,
+        'cat_selected': category.pk,
+    }
+    return render(request, 'places/index.html', context=context)
+
+def show_tag_services(request, tag_slug):
+    tag = get_object_or_404(TagService, slug=tag_slug)
+    posts = tag.services.filter(is_published=True)
+
+    context = {
+        'title': f'Тег: {tag.tag}',
+        'menu': menu,
+        'posts': posts,
+        'cat_selected': None,
+        'tag_selected': tag.slug,
+    }
+    return render(request, 'places/index.html', context=context)
 
 
 
