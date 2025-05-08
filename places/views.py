@@ -2,8 +2,10 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpRespons
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.template.loader import render_to_string
+from django.contrib import messages
+from .forms import OrderForm
 
-from places.models import Service, ServiceCategory, TagService
+from places.models import Service, ServiceCategory, TagService, OrderRequest
 
 '''
 menu = ["О компании", "Услуги", "Контакты", "Вход"]
@@ -16,7 +18,7 @@ class Info:
 
 menu = [{'title': "Главная", 'url_name': 'home'},
         {'title': "О сайте", 'url_name': 'about'},
-        {'title': "Добавить услугу", 'url_name':'add_page'},
+        {'title': "Оставить заявку", 'url_name':'add_request'},
         {'title': "Обратная связь", 'url_name':'contact'},
         {'title': "Войти", 'url_name': 'login'}
 ]
@@ -93,8 +95,29 @@ def show_service(request, service_slug):
     }
     return render(request, 'places/service.html', data)
 
-def addpage(request):
-    return render(request, 'places/addpage.html', context = {'menu': menu, 'active_page': 'add_page'})
+
+def add_request(request):
+    if request.method == 'POST':
+        form = OrderForm(request.POST, request.FILES)
+        if form.is_valid():
+            order = form.save()
+            return redirect('order_success', order_id=order.id)
+    else:
+        form = OrderForm()
+
+    return render(request, 'places/add_request.html', {'form': form, 'menu': menu, 'active_page': 'add_request'})
+
+def order_success(request, order_id):
+    order = get_object_or_404(OrderRequest, id=order_id)
+    return render(request, 'places/order_success.html', {'order': order, 'menu': menu})
+
+def cancel_order(request, order_id):
+    order = get_object_or_404(OrderRequest, id=order_id)
+    if request.method == 'POST':
+        order.delete()
+        return redirect('home')
+    return render(request, 'places/cancel_order.html', {'order': order, 'menu': menu})
+
 def contact(request):
     return render(request, 'places/contact.html', context = {'menu': menu, 'active_page': 'contact'})
 def login(request):

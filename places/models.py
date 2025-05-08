@@ -83,5 +83,19 @@ class Service(models.Model):
             models.Index(fields=['-price']),
         ]
 
+class OrderRequest(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Имя клиента")
+    phone = models.CharField(max_length=20, verbose_name="Телефон")
+    address = models.TextField(verbose_name="Адрес")
+    date = models.DateField(verbose_name="Дата уборки")
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name="Услуга")
+    comment = models.TextField(blank=True, verbose_name="Комментарий")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания заявки")
+    image = models.ImageField(upload_to='uploads/', null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.name} - {self.service.name} на {self.date}"
 
+    class Meta:
+        verbose_name = 'Заявка'
+        verbose_name_plural = 'Заявки'

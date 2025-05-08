@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Заявка отправлена успешно!</h2>
+  <p><strong>Имя:</strong> {{ order.name }}</p>
+  <p><strong>Телефон:</strong> {{ order.phone }}</p>
+  <p><strong>Адрес:</strong> {{ order.address }}</p>
+  <p><strong>Дата уборки:</strong> {{ order.date }}</p>
+  <p><strong>Тип услуги:</strong> {{ order.service }}</p>
+  {% if order.comment %}
+    <p><strong>Комментарий:</strong> {{ order.comment }}</p>
+  {% endif %}
+  {% if order.image %}
+    <p><strong>Фото:</strong><br>
+    <img src="{{ order.image.url }}" alt="Фото заявки" width="300"></p>
+  {% endif %}
+    <form action="{% url 'cancel_order' order.id %}" method="post" onsubmit="return confirm('Вы уверены, что хотите отменить заявку?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">❌ Отменить заявку</button>
+    </form>
+{% endblock %}
