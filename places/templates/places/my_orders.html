@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Мои заявки</h2>
+<ul>
+    {% for order in orders %}
+        <li>
+            Заявка №{{ order.id }} — {{ order.created_at|date:"d.m.Y H:i" }}
+            [<a href="{% url 'order_success' order.id %}">Подробнее</a>]
+        </li>
+    {% empty %}
+        <li>У вас пока нет заявок.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

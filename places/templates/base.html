@@ -9,15 +9,40 @@
     <link rel="stylesheet" href="{% static 'places/css/styles.css' %}">
 </head>
 <body>
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
     <div class="wrapper">
         <header>
-            <nav class="main-menu">
+            <nav  class="main-menu">
                 <ul>
-                    {% for m in menu %}
+                    {% for m in mainmenu %}
                         <li class="{% if m.url_name == active_page %}selected{% endif %}">
                             <a href="{% url m.url_name %}">{{ m.title }}</a>
                         </li>
                     {% endfor %}
+                    {% if user.is_authenticated %}
+                        <li class="last {% if request.path == '/my_orders/' %}selected{% endif %}">
+                            <a href="{% url 'my_orders' %}">Мои заявки</a>
+                        </li>
+                        <li class="last {% if request.path == '/users/profile/' %}selected{% endif %}">
+                            <a href="{% url 'users:profile' %}">{{ user.username }}</a> |
+                        </li>
+                        <li class="last">
+                            <a href="{% url 'users:logout' %}">Выйти</a>
+                          </li>
+                    {% else %}
+                        <li class="last {% if request.path == '/users/login/' %}selected{% endif %}">
+                            <a href="{% url 'users:login' %}">Войти</a>
+                        </li>
+                        <li class="last {% if request.path == '/users/register/' %}selected{% endif %}">
+                            <a href="{% url 'users:register' %}">Регистрация</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </nav>
         </header>

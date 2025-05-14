@@ -1,9 +1,12 @@
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.contrib import messages
 from .forms import OrderForm
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.views.generic import ListView
 
 from places.models import Service, ServiceCategory, TagService, OrderRequest
 
@@ -20,7 +23,6 @@ menu = [{'title': "Главная", 'url_name': 'home'},
         {'title': "О сайте", 'url_name': 'about'},
         {'title': "Оставить заявку", 'url_name':'add_request'},
         {'title': "Обратная связь", 'url_name':'contact'},
-        {'title': "Войти", 'url_name': 'login'}
 ]
 
 
@@ -74,7 +76,6 @@ def index(request):
     context = {
         'title': 'Главная',
         'posts': services,
-        'menu': menu,
         'cat_selected': 0,
         'active_page': 'home'
     }
@@ -82,7 +83,7 @@ def index(request):
 
 
 def about(request):
-    return render(request, 'places/about.html', {'title': 'О компании', 'menu': menu, 'active_page': 'about'})
+    return render(request, 'places/about.html', {'title': 'О компании', 'active_page': 'about'})
 
 def show_service(request, service_slug):
     service = get_object_or_404(Service, slug=service_slug)
@@ -90,38 +91,41 @@ def show_service(request, service_slug):
     data = {
         'title': service.name,
         'service': service,
-        'menu': menu,
         'active_page': 'home'
     }
     return render(request, 'places/service.html', data)
 
-
+@login_required
 def add_request(request):
     if request.method == 'POST':
         form = OrderForm(request.POST, request.FILES)
         if form.is_valid():
-            order = form.save()
+            order = form.save(commit=False)
+            order.user = request.user
+            order.save()
             return redirect('order_success', order_id=order.id)
     else:
         form = OrderForm()
 
-    return render(request, 'places/add_request.html', {'form': form, 'menu': menu, 'active_page': 'add_request'})
+    return render(request, 'places/add_request.html', {'form': form, 'active_page': 'add_request'})
 
+
+#@permission_required('places.view_orderrequest', raise_exception=True)
 def order_success(request, order_id):
     order = get_object_or_404(OrderRequest, id=order_id)
-    return render(request, 'places/order_success.html', {'order': order, 'menu': menu})
+    return render(request, 'places/order_success.html', {'order': order})
 
 def cancel_order(request, order_id):
     order = get_object_or_404(OrderRequest, id=order_id)
     if request.method == 'POST':
         order.delete()
         return redirect('home')
-    return render(request, 'places/cancel_order.html', {'order': order, 'menu': menu})
+    return render(request, 'places/cancel_order.html', {'order': order})
 
 def contact(request):
-    return render(request, 'places/contact.html', context = {'menu': menu, 'active_page': 'contact'})
+    return render(request, 'places/contact.html', context = { 'active_page': 'contact'})
 def login(request):
-    return render(request, 'places/login.html', context = {'menu': menu, 'active_page': 'login'})
+    return render(request, 'places/login.html', context = { 'active_page': 'login'})
 
 def show_category(request, cat_slug):
     category = get_object_or_404(ServiceCategory, slug=cat_slug)
@@ -147,5 +151,19 @@ def show_tag_services(request, tag_slug):
     }
     return render(request, 'places/index.html', context=context)
 
+class MyOrdersView(LoginRequiredMixin, ListView):
+#class MyOrdersView(LoginRequiredMixin, '''PermissionRequiredMixin''', ListView):
+    model = OrderRequest
+    template_name = 'places/my_orders.html'
+    context_object_name = 'orders'
+    login_url = 'users:login'
+    #permission_required = 'places.my_orders.html'
 
+    def get_queryset(self):
+        return OrderRequest.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_page'] = 'my_orders'
+        return context
 

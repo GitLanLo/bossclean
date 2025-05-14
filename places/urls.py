@@ -11,6 +11,7 @@ urlpatterns = [
     path('category/<slug:cat_slug>/', views.show_category, name='category'),
     path('add_request/', views.add_request, name='add_request'),
     path('order_success/<int:order_id>/', views.order_success, name='order_success'),
+    path('my_orders/', views.MyOrdersView.as_view(), name='my_orders'),
     path('cancel_order/<int:order_id>/', views.cancel_order, name='cancel_order'),
      path('contact/', views.contact, name='contact'),
      path('login/', views.login, name='login'),

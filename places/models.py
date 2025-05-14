@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 def translit_to_eng(s: str) -> str:
     d = {
@@ -84,6 +85,8 @@ class Service(models.Model):
         ]
 
 class OrderRequest(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='order_requests', null=True,
+                             blank=True, verbose_name="Пользователь")
     name = models.CharField(max_length=100, verbose_name="Имя клиента")
     phone = models.CharField(max_length=20, verbose_name="Телефон")
     address = models.TextField(verbose_name="Адрес")
