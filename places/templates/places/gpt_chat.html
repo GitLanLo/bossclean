@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>Виртуальный помощник BossClean</h2>
+    <form method="post">
+      {% csrf_token %}
+      <label>Ваш вопрос:</label><br>
+      <textarea name="prompt" rows="4" cols="60">{{ request.POST.prompt }}</textarea><br>
+      <button type="submit">Спросить</button>
+    </form>
+
+    {% if response %}
+      <h3>Ответ YandexGPT:</h3>
+      <p>{{ response }}</p>
+    {% endif %}
+{% endblock %}

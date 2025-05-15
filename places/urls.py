@@ -1,6 +1,8 @@
 from django.urls import path, re_path, register_converter
 from . import views
 from . import converters
+from django.urls import path
+from .views import gpt_chat, gpt_chat_ajax
 
 register_converter(converters.FourDigitYearConverter, "year4")
 urlpatterns = [
@@ -18,6 +20,7 @@ urlpatterns = [
     path('categories/<int:so_id>/', views.categories, name='so_int'),
     path('categories/<slug:so_slug>/', views.categoriesBySlug, name='so_slug'),
     path('archive/<year4:year>/', views.archive, name='archive'),
-
+    path("gpt-chat/", gpt_chat, name="gpt_chat"),
+    path("gpt-chat-ajax/", gpt_chat_ajax, name="gpt_chat_ajax"),
 ]
 

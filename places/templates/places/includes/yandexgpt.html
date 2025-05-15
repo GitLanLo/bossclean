@@ -1,0 +1,89 @@
+<!-- Кнопка вызова помощника -->
+<button id="chatToggle" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    z-index: 1000;
+">
+    🤖 Виртуальный помощник
+</button>
+
+<!-- Модальное окно -->
+<div id="chatModal" style="
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 360px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    z-index: 1001;
+">
+    <button onclick="document.getElementById('chatModal').style.display='none'" style="
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        border: none;
+        background: none;
+        font-size: 18px;
+        cursor: pointer;
+    ">✖</button>
+
+    <label><strong>Ваш вопрос:</strong></label>
+    <textarea id="chatPrompt" rows="4" style="width: 100%; margin-top: 5px;"></textarea>
+    <button id="sendChat" style="
+        margin-top: 8px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+    ">Спросить</button>
+
+    <div id="chatResponse" style="margin-top: 15px; font-size: 14px;"></div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById('chatModal');
+        const toggle = document.getElementById('chatToggle');
+        const sendBtn = document.getElementById('sendChat');
+        const responseBox = document.getElementById('chatResponse');
+
+        toggle.addEventListener('click', function () {
+            modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
+        });
+
+        sendBtn.addEventListener('click', function () {
+            const prompt = document.getElementById('chatPrompt').value;
+            responseBox.innerHTML = "<em>Ожидание ответа...</em>";
+
+            fetch("{% url 'gpt_chat_ajax' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseBox.innerHTML = `<strong>Ответ:</strong> ${data.response}`;
+            })
+            .catch(error => {
+                responseBox.innerHTML = "Произошла ошибка. Попробуйте позже.";
+                console.error(error);
+            });
+        });
+    });
+</script>

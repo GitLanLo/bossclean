@@ -7,6 +7,8 @@ from django.contrib import messages
 from .forms import OrderForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import ListView
+from django.shortcuts import render
+from .gpt_api import ask_yandex_gpt
 
 from places.models import Service, ServiceCategory, TagService, OrderRequest
 
@@ -166,4 +168,26 @@ class MyOrdersView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['active_page'] = 'my_orders'
         return context
+
+def gpt_chat(request):
+    response_text = ""
+    if request.method == "POST":
+        user_prompt = request.POST.get("prompt")
+        response_text = ask_yandex_gpt(user_prompt)
+
+    return render(request, "places/gpt_chat.html", {"response": response_text})
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .gpt_api import ask_yandex_gpt
+
+@csrf_exempt
+def gpt_chat_ajax(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        prompt = data.get("prompt", "")
+        response = ask_yandex_gpt(prompt)
+        return JsonResponse({"response": response})
+    return JsonResponse({"error": "Invalid request"}, status=400)
 

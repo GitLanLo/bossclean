@@ -3,5 +3,33 @@
 
     {% block content %}
         <p>Наша клининговая компания предоставляет широкий спектр услуг по уборке помещений.</p>
+        <h2>Наш офис</h2>
+        <p><strong>Адрес:</strong> Казань, ул. Нурсултана Назарбаева, д. 47/113</p>
+
+        <!-- Карта -->
+        <div id="map" style="width: 100%; height: 400px; border-radius: 10px; margin-top: 20px;"></div>
+
+        <!-- Скрипт Яндекс.Карт -->
+        <script src="https://api-maps.yandex.ru/2.1/?apikey=5a566524-10eb-4977-95af-7ad6f52b2b95&lang=ru_RU" type="text/javascript"></script>
+        <script>
+          ymaps.ready(function () {
+            var myMap = new ymaps.Map("map", {
+              center: [55.769418, 49.132968],
+              zoom: 15,
+              controls: ['zoomControl', 'fullscreenControl']
+            });
+
+            var myPlacemark = new ymaps.Placemark([55.769418, 49.132968], {
+              balloonContentHeader: 'Офис BossClean',
+              balloonContentBody: 'г. Казань, ул. Нурсултана Назарбаева, д. 47/113<br>Тел: +7 (495) 000-00-00',
+              hintContent: 'Наш офис'
+            }, {
+              preset: 'islands#icon',
+              iconColor: '#00aaff'
+            });
+
+            myMap.geoObjects.add(myPlacemark);
+          });
+        </script>
     {% endblock %}
 
