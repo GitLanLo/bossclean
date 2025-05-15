@@ -8,7 +8,7 @@ from .forms import OrderForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import ListView
 from django.shortcuts import render
-from .gpt_api import ask_yandex_gpt
+from .gpt_api import ask_yandex_gpt, ask_yandex_gpt_with_history
 
 from places.models import Service, ServiceCategory, TagService, OrderRequest
 
@@ -186,8 +186,8 @@ from .gpt_api import ask_yandex_gpt
 def gpt_chat_ajax(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        prompt = data.get("prompt", "")
-        response = ask_yandex_gpt(prompt)
-        return JsonResponse({"response": response})
+        messages = data.get("messages", [])
+        response_text = ask_yandex_gpt_with_history(messages)
+        return JsonResponse({"response": response_text})
     return JsonResponse({"error": "Invalid request"}, status=400)
 

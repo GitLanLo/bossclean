@@ -11,7 +11,7 @@
     cursor: pointer;
     z-index: 1000;
 ">
-    🤖 Виртуальный помощник
+    🤖 Помощник
 </button>
 
 <!-- Модальное окно -->
@@ -21,36 +21,52 @@
     bottom: 80px;
     right: 20px;
     width: 360px;
+    height: 480px;
     background: white;
     border: 1px solid #ccc;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    padding: 15px;
+    padding: 10px;
     z-index: 1001;
+    display: flex;
+    flex-direction: column;
 ">
-    <button onclick="document.getElementById('chatModal').style.display='none'" style="
-        position: absolute;
-        top: 5px;
-        right: 10px;
-        border: none;
-        background: none;
-        font-size: 18px;
-        cursor: pointer;
-    ">✖</button>
+    <!-- Заголовок и кнопка закрытия -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <strong>Виртуальный помощник</strong>
+        <button onclick="document.getElementById('chatModal').style.display='none'" style="
+            border: none;
+            background: none;
+            font-size: 18px;
+            cursor: pointer;
+        ">✖</button>
+    </div>
 
-    <label><strong>Ваш вопрос:</strong></label>
-    <textarea id="chatPrompt" rows="4" style="width: 100%; margin-top: 5px;"></textarea>
-    <button id="sendChat" style="
-        margin-top: 8px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 5px;
-        cursor: pointer;
-    ">Спросить</button>
+    <!-- История диалога -->
+    <div id="chatHistory" style="
+        flex-grow: 1;
+        overflow-y: auto;
+        margin-top: 10px;
+        padding-right: 5px;
+        font-size: 14px;
+    ">
+        <!-- Сообщения будут добавляться сюда -->
+    </div>
 
-    <div id="chatResponse" style="margin-top: 15px; font-size: 14px;"></div>
+    <!-- Поле ввода и кнопка -->
+    <div style="margin-top: 10px;">
+        <textarea id="chatPrompt" rows="2" placeholder="Введите сообщение..." style="width: 100%; resize: none;"></textarea>
+        <button id="sendChat" style="
+            margin-top: 6px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+        ">Отправить</button>
+    </div>
 </div>
 
 <script>
@@ -58,15 +74,33 @@
         const modal = document.getElementById('chatModal');
         const toggle = document.getElementById('chatToggle');
         const sendBtn = document.getElementById('sendChat');
-        const responseBox = document.getElementById('chatResponse');
+        const responseBox = document.getElementById('chatHistory');
+        const input = document.getElementById('chatPrompt');
+
+        let messages = [];
 
         toggle.addEventListener('click', function () {
-            modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
+            modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
         });
 
+        function addMessage(role, text) {
+            const msgDiv = document.createElement("div");
+            msgDiv.style.margin = "6px 0";
+            msgDiv.style.backgroundColor = role === "user" ? "#e0f7fa" : "#f1f8e9";
+            msgDiv.style.padding = "8px 10px";
+            msgDiv.style.borderRadius = "8px";
+            msgDiv.style.alignSelf = role === "user" ? "flex-end" : "flex-start";
+            msgDiv.innerText = text;
+            responseBox.appendChild(msgDiv);
+            responseBox.scrollTop = responseBox.scrollHeight;
+        }
+
         sendBtn.addEventListener('click', function () {
-            const prompt = document.getElementById('chatPrompt').value;
-            responseBox.innerHTML = "<em>Ожидание ответа...</em>";
+            const prompt = input.value.trim();
+            if (!prompt) return;
+            input.value = "";
+            addMessage("user", prompt);
+            messages.push({ role: "user", text: prompt });
 
             fetch("{% url 'gpt_chat_ajax' %}", {
                 method: "POST",
@@ -74,14 +108,16 @@
                     "Content-Type": "application/json",
                     "X-CSRFToken": "{{ csrf_token }}"
                 },
-                body: JSON.stringify({ prompt: prompt })
+                body: JSON.stringify({ messages: messages })
             })
             .then(response => response.json())
             .then(data => {
-                responseBox.innerHTML = `<strong>Ответ:</strong> ${data.response}`;
+                const answer = data.response;
+                addMessage("assistant", answer);
+                messages.push({ role: "assistant", text: answer });
             })
             .catch(error => {
-                responseBox.innerHTML = "Произошла ошибка. Попробуйте позже.";
+                addMessage("assistant", "Произошла ошибка 😔");
                 console.error(error);
             });
         });
