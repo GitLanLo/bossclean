@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -9,7 +9,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.views.generic import ListView
 from django.shortcuts import render
 from .gpt_api import ask_yandex_gpt, ask_yandex_gpt_with_history
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .gpt_api import ask_yandex_gpt
 from places.models import Service, ServiceCategory, TagService, OrderRequest
 
 '''
@@ -42,8 +45,11 @@ services_db = [
 ]
 
 # Create your views here.
-def index(request):
-    return HttpResponse("Это страница приложения places.")
+def in_group(group_name):
+    def check(user):
+        return user.is_authenticated and user.groups.filter(name=group_name).exists()
+    return check
+
 
 def categories(request, so_id):
     return HttpResponse(f"<h1>Категории</h1><p>id: {so_id}</p>")
@@ -124,6 +130,8 @@ def cancel_order(request, order_id):
         return redirect('home')
     return render(request, 'places/cancel_order.html', {'order': order})
 
+@login_required
+@user_passes_test(in_group('Admin'))
 def contact(request):
     return render(request, 'places/contact.html', context = { 'active_page': 'contact'})
 def login(request):
@@ -177,10 +185,6 @@ def gpt_chat(request):
 
     return render(request, "places/gpt_chat.html", {"response": response_text})
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .gpt_api import ask_yandex_gpt
 
 @csrf_exempt
 def gpt_chat_ajax(request):

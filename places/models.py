@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
 
 def translit_to_eng(s: str) -> str:
     d = {
@@ -84,16 +85,50 @@ class Service(models.Model):
             models.Index(fields=['-price']),
         ]
 
+
 class OrderRequest(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='order_requests', null=True,
                              blank=True, verbose_name="Пользователь")
-    name = models.CharField(max_length=100, verbose_name="Имя клиента")
-    phone = models.CharField(max_length=20, verbose_name="Телефон")
-    address = models.TextField(verbose_name="Адрес")
+
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Имя клиента",
+        validators=[
+            MinLengthValidator(2, "Имя должно содержать минимум 2 символа"),
+            RegexValidator(r'^[А-Яа-яA-Za-z\s\-]+$', 'Имя может содержать только буквы, пробелы и дефисы')
+        ]
+    )
+
+    phone = models.CharField(
+        max_length=20,
+        verbose_name="Телефон",
+        validators=[
+            RegexValidator(r'^\+?\d{10,15}$', 'Введите корректный номер телефона, начиная с +7 или 8')
+        ]
+    )
+
+    address = models.TextField(
+        verbose_name="Адрес",
+        validators=[
+            MinLengthValidator(5, "Адрес слишком короткий"),
+            MaxLengthValidator(300, "Адрес слишком длинный")
+        ]
+    )
+
     date = models.DateField(verbose_name="Дата уборки")
+
     service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name="Услуга")
-    comment = models.TextField(blank=True, verbose_name="Комментарий")
+
+    comment = models.TextField(
+        blank=True,
+        verbose_name="Комментарий",
+        validators=[
+            MaxLengthValidator(1000, "Комментарий слишком длинный (до 1000 символов)")
+        ]
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания заявки")
+
     image = models.ImageField(upload_to='uploads/', null=True, blank=True)
 
     def __str__(self):
